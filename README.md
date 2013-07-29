@@ -2,7 +2,7 @@ byu-ws-python-sdk
 =================
 
 A Python SDK for authenticating to BYU REST web services.  To do this, the library provides methods to generate the
-  required Authorization HTTP header for your REST web service HTTP calls.
+  required Authorization HTTP header for your REST web service calls.
 
 Here is an ipython session showing the API.  I wrapped some of the output for readability.
 
