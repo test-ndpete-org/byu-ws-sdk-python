@@ -2,7 +2,6 @@
 
 from distutils.core import setup
 import sys
-import subprocess
 
 if sys.version_info < (2, 7, 0) or sys.version_info >= (3, 0, 0):
     sys.stderr.write("byu-ws-sdk-python currently requires Python 2.7.\n")
@@ -16,7 +15,7 @@ with open('README.rst') as rm_file:
     long_description = rm_file.read()
 
 setup(name='byu-ws-sdk-python',
-      version='0.9.5',
+      version='0.9.6',
       description='A Python SDK for calling BYU REST web services.',
       long_description=long_description,
       author='BYU OIT Core Application Engineering',
