@@ -25,7 +25,7 @@ Here is an ipython session showing the API.  I wrapped some of the output for re
     In [4]: shared_secret = 'your-shared-secret'
 
     In [5]: headerVal = sdk.get_http_authorization_header(key, shared_secret, sdk.KEY_TYPE_API, sdk.ENCODING_URL,
-                            url=url, actor='pde2', httpMethod=sdk.HTTP_METHOD_GET, actorInHash=True)
+                            url=url, actor='pd123', httpMethod=sdk.HTTP_METHOD_GET, actorInHash=True)
 
     In [6]: import requests
 
@@ -80,7 +80,7 @@ Here is an ipython session showing the API.  I wrapped some of the output for re
         valid values for timeout are 1 to 480 in minutes (480 minutes = 8 hours)
 
         return value example is
-        {'personId': '524246202', 'apiKey': '5f_TzU3jdjX6s7DklHA8',
+        {'personId': '123456789', 'apiKey': '5f_TzU3jdjX6s7DklHA8',
         'expireDate': '2011-07-07 19:12:43',
         'sharedSecret': 'gKLR8oDsNK4jyvKyWZtsFoiwuvLhwWpsBDTNJo_D'}
 
