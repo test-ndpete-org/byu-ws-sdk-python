@@ -16,7 +16,7 @@ with open('README.rst') as rm_file:
     long_description = rm_file.read()
 
 setup(name='byu-ws-sdk-python',
-      version='0.9.3',
+      version='0.9.4',
       description='A Python SDK for calling BYU REST web services.',
       long_description=long_description,
       author='Paul Eden',
