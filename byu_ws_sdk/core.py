@@ -67,7 +67,7 @@ def get_formatted_response(headers, response_str):
 
 def get_ws_session(casNetId, casPassword, timeout=1):
     """
-    get a wsSession keypair (apiKey/wsId and sharedSecret)
+    get a wsSession key pair (apiKey/wsId and sharedSecret)
 
     timeout is the number of minutes before the wsSession key expires.
     valid values for timeout are 1 to 480 in minutes (480 minutes = 8 hours)
@@ -84,6 +84,9 @@ def get_ws_session(casNetId, casPassword, timeout=1):
                              headers=headers, config=requests_config)
     response.raise_for_status()
     body = response.content
+    if not body:
+        raise Exception("The WsSession-granting web service did not provide a WsSession."
+                        "  Perhaps the username and password supplied are not valid?")
     return simplejson.loads(body)
 
 
