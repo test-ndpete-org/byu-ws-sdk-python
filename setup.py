@@ -19,7 +19,7 @@ if sys.version_info >= (3,):
     extra['use_2to3'] = True
 
 setup(name='byu_ws_sdk',
-      version='0.9.11',
+      version='0.9.12',
       description='A Python SDK for calling BYU REST web services.',
       long_description=long_description,
       author='BYU OIT Core Application Engineering',
