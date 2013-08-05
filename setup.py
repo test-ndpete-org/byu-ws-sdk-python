@@ -19,7 +19,7 @@ if sys.version_info >= (3,):
     extra['use_2to3'] = True
 
 setup(name='byu_ws_sdk',
-      version='0.9.12',
+      version='0.9.13',
       description='A Python SDK for calling BYU REST web services.',
       long_description=long_description,
       author='BYU OIT Core Application Engineering',
@@ -29,7 +29,7 @@ setup(name='byu_ws_sdk',
       data_files=[('', ['README.md', 'LICENSE'])],
       test_suite="byu_ws_sdk.test",
       license="MIT",
-      requires=['requests (>=0.14.1, <=0.14.2)', 'simplejson', 'decorator'],
+      install_requires=['requests == 0.14.1', 'simplejson', 'decorator'],
       zip_safe=True,
       **extra
       )
