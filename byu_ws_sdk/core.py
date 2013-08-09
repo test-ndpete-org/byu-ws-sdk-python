@@ -1,17 +1,15 @@
 """
 The code that generates the Authorization HTTP header.
 """
+__author__ = 'paul_eden@byu.edu'
 import os
 import xml.dom.minidom
-
-__author__ = 'paul_eden@byu.edu'
-
 import simplejson
 import hashlib
 import hmac
 import base64
+import sys
 import time
-
 import requests
 
 # Singletons for use in validation and conformity of arguments
@@ -26,9 +24,6 @@ HTTP_METHOD_DELETE = "DELETE"
 VALID_HTTP_METHODS = [HTTP_METHOD_GET, HTTP_METHOD_PUT, HTTP_METHOD_POST, HTTP_METHOD_DELETE]
 VALID_KEY_TYPES = [KEY_TYPE_API, KEY_TYPE_WSSESSION]
 VALID_ENCODING_TYPES = [ENCODING_NONCE, ENCODING_URL]
-
-#requests_config = {'verbose': sys.stderr}
-requests_config = None
 
 
 def valid_http_method(method):
@@ -81,7 +76,7 @@ def get_ws_session(casNetId, casPassword, timeout=1):
     data = "timeout=%(timeout)s&password=%(password)s&netId=%(username)s" % cas_user_dict
     headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
     response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/ws/session", data=data,
-                             headers=headers, config=requests_config)
+                             headers=headers)
     response.raise_for_status()
     body = response.content
     if not body:
@@ -102,13 +97,12 @@ def get_nonce(apiKey, actor=""):
     """
     if actor:
         actor = "/" + actor
-    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/%s%s" % (apiKey, actor),
-                             config=requests_config)
+    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/%s%s" % (apiKey, actor))
     body = response.content
     try:
         rvalue = simplejson.loads(body)
     except:
-        print body
+        print(body)
         raise
     return rvalue
 
@@ -168,20 +162,28 @@ def _sort_params(params_str):
                 params[key] = value
             else:
                 params[key] = params[key] + "," + value
-    return_value = "&".join(["%s=%s" % (key, params[key]) for key in sorted(params.iterkeys())])
+    return_value = "&".join(["%s=%s" % (key, params[key]) for key in sorted(params.keys())])
     return return_value
 
 
 def base64encode_string(string, demo=False):
-    rvalue = base64.encodestring(string).strip().replace(" ", "").replace("\n", "").replace("\r", "")
+    if sys.version_info < (3,):
+        rvalue = base64.encodestring(string).strip().replace(" ", "").replace("\n", "").replace("\r", "")
+    else:
+        rvalue1 = base64.encodebytes(string)
+        rvalue = rvalue1.strip().decode('utf-8').replace('\n', '').replace('\r', '').encode('utf-8')
     if demo:
-        print "// base64 encoding the hash to create (%s)" % rvalue
+        print("// base64 encoding the hash to create (%s)" % rvalue)
     return rvalue
 
 
 def make_sha512_mac(sharedSecret, string, demo=False):
     if demo:
-        print "// Making a sha512 hash of (%s) with my private key" % string
+        print("// Making a sha512 hash of (%s) with my private key" % string)
+    if sys.version_info > (3,):  # if python 3 convert to binary bytes
+        sharedSecret = sharedSecret.encode("utf-8")
+        if not isinstance(string, bytes):
+            string = string.encode("utf-8")
     return hmac.new(key=sharedSecret,
                     msg=string,
                     digestmod=hashlib.sha512).digest()
@@ -206,14 +208,14 @@ def url_encode(sharedSecret, current_timestamp, url, requestBody="", contentType
             item_to_encode = "%s\n%s\n%s\n%s" % (http_method.upper(),
                                                  host, request_uri, _sort_params(requestBody)) + end_str
             if demo:
-                print "// There is something in the request " \
-                      "body and the content-type of the request is %s" % exception_ct
+                print("// There is something in the request " \
+                      "body and the content-type of the request is %s" % exception_ct)
         else:
             item_to_encode = requestBody + end_str
             if demo:
-                print "// There is something in the request body"
+                print("// There is something in the request body")
     if demo:
-        print "// We are URL Encoding the following (%s)" % item_to_encode
+        print("// We are URL Encoding the following (%s)" % item_to_encode)
     mac = make_sha512_mac(sharedSecret,
                           str(item_to_encode).encode("ascii"), demo)
     return base64encode_string(mac, demo)
@@ -226,7 +228,7 @@ def nonce_encode(sharedSecret, nonceValue, demo=False):
     Returns hmac
     """
     if demo:
-        print "// Nonce encoding (%s) with our private key" % nonceValue
+        print("// Nonce encoding (%s) with our private key" % nonceValue)
     mac = make_sha512_mac(sharedSecret, nonceValue)
     return base64encode_string(mac)
 
@@ -278,6 +280,5 @@ def send_ws_request(url, httpMethod, requestBody=None, headers=None):
     if not valid_http_method(httpMethod):
         raise Exception(
             "The httpMethod passed in (%s) is not one of '%s'" % (httpMethod, "','".join(VALID_HTTP_METHODS)))
-    response = getattr(requests, httpMethod.lower())(url, data=requestBody, headers=headers, config=requests_config,
-                                                     verify=False)
+    response = getattr(requests, httpMethod.lower())(url, data=requestBody, headers=headers, verify=False)
     return response.content, response.status_code, response.headers, response

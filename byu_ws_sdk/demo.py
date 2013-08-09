@@ -22,12 +22,12 @@ def setup_demo():
 
         print_data = copy.deepcopy(data)
         print_data = print_data[:-2]
-        print "> " + print_data.replace("\r\n", "\r\n> ")
-        print ""
+        print("> " + print_data.replace("\r\n", "\r\n> "))
+        print()
         blocksize = 8192
         if hasattr(data, 'read') and not isinstance(data, array):
             if self.debuglevel > 0:
-                print "sendIng a read()able"
+                print("sendIng a read()able")
             data_block = data.read(blocksize)
             while data_block:
                 self.sock.sendall(data_block)
@@ -63,8 +63,8 @@ def setup_demo():
 
             msg.append(core.get_formatted_response(response.headers, response.content))
 
-            print "< " + "\r\n< ".join(msg)
-            print ""
+            print("< " + "\r\n< ".join(msg))
+            print()
         return wrapper
 
     if requests.models.Request.send.__name__ != "wrapper":  # not wrapped yet (this fixed a duplicate output bug)
