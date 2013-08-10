@@ -1,4 +1,4 @@
-import .core
+from . import core
 # TODO figure out a way to make this more robust to python version changes
 
 
