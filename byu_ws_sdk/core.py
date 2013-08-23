@@ -235,7 +235,7 @@ def nonce_encode(sharedSecret, nonceValue, demo=False):
 #### Functions to make the HTTP request to a secured web service ####
 
 
-def get_http_authorization_header(apiKey, sharedSecret, keyType, encodingType, url="", requestBody=None, actor=None,
+def get_http_authorization_header(apiKey, sharedSecret, keyType, encodingType, url="", requestBody=None, actor="",
                                   contentType=None, httpMethod=None, demo=False, actorInHash=False):
     """
     Encode the request to get the Authorization header value.
