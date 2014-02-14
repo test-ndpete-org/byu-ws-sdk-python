@@ -270,7 +270,7 @@ def get_http_authorization_header(apiKey, sharedSecret, keyType, encodingType, u
             encodingType, keyType, apiKey, base64encoded_hmac, current_timestamp, actor_value)
 
 
-def send_ws_request(url, httpMethod, requestBody=None, headers=None):
+def send_ws_request(url, httpMethod, requestBody=None, headers=None, timeout=None):
     """
     A simple example of how to call the web service once the
     the authorization_header_value is available.
@@ -280,5 +280,5 @@ def send_ws_request(url, httpMethod, requestBody=None, headers=None):
     if not valid_http_method(httpMethod):
         raise Exception(
             "The httpMethod passed in (%s) is not one of '%s'" % (httpMethod, "','".join(VALID_HTTP_METHODS)))
-    response = getattr(requests, httpMethod.lower())(url, data=requestBody, headers=headers, verify=False)
+    response = getattr(requests, httpMethod.lower())(url, data=requestBody, headers=headers, verify=False, timeout=timeout)
     return response.content, response.status_code, response.headers, response
