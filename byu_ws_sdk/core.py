@@ -284,3 +284,52 @@ def send_ws_request(url, httpMethod, requestBody=None, **kwargs):
             "The httpMethod passed in (%s) is not one of '%s'" % (httpMethod, "','".join(VALID_HTTP_METHODS)))
     response = getattr(requests, httpMethod.lower())(url, data=requestBody, **kwargs)
     return response.content, response.status_code, response.headers, response
+
+
+def authorize_request(requestedUrl, authHeader, apiKey, sharedSecret,
+                      actor='', **kwargs):
+    """
+    Returns the personId of a valid BYU authenticated request or None.
+
+    None is returned if the request isn't valid for any reason.
+    Arguments:
+        requestedUrl  -- url requested using the authHeader given.
+        authHeader    -- value of the Authorization header sent with the request.
+        apiKey        -- your api key
+        sharedSecret  -- your shared secret
+
+    Keyword arguments:
+        actor         -- the actor making this authorization request (default '')
+
+    Also accepts any number of other keyword arguments that are passed directly
+    to the calls to get_nonce and request.post
+    """
+    authUrl = ('https://ws.byu.edu/authentication/services/rest/'
+               'v1/provider/URL-Encoded-API-Key/validate')
+
+    if authHeader:
+        wsId, messageDigest, timestamp = authHeader.split(',')
+        wsId = wsId.split(' ')[1]
+        nonce = get_nonce(apiKey, actor, **kwargs)
+        data = {
+            'wsId': wsId,
+            'messageDigest': messageDigest,
+            'timestamp': timestamp,
+            'message': requestedUrl,
+        }
+
+        nonceDigest = nonce_encode(sharedSecret, nonce['nonceValue'])
+        auth = 'Nonce-Encoded-API-Key {0},{1},{2}'.format(apiKey,
+                                                          nonce['nonceKey'],
+                                                          nonceDigest)
+        if kwargs.get('headers'):
+            kwargs['headers']['Authorization'] = auth
+        else:
+            kwargs['headers'] = {'Authorization': auth}
+        response = requests.post(authUrl,
+                                 data=data,
+                                 **kwargs)
+        if response.status_code == 200:
+            return response.json()['personId']
+
+    return None

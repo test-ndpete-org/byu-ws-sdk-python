@@ -73,6 +73,19 @@ class TestOITWebServicesLibrary(unittest.TestCase):
                                            None,)
         self.assertTrue(res.status_code, 200)
 
+    def test_failed_authorize_request(self):
+        apiKey = 'YF4i2Qdx2WuSj-G8583M'
+        sharedSecret = '98F8wh62cAt8OuufF2rY3B1MSelA8MArV_Zg4CJ9'
+        headerValue = oit.get_http_authorization_header(apiKey,
+                                                        sharedSecret,
+                                                        oit.KEY_TYPE_API,
+                                                        oit.ENCODING_URL,
+                                                        "http://www.byu.edu/",
+                                                        "")
+        res = oit.authorize_request('http://www.byu.edu/', headerValue, apiKey,
+                                    sharedSecret, verify=False)
+        self.assertTrue(res is None)
+
 
 if __name__ == "__main__":
     unittest.main()
