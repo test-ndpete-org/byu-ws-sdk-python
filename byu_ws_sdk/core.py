@@ -60,23 +60,26 @@ def get_formatted_response(headers, response_str):
 #### Key Retrieval Functions ####
 
 
-def get_ws_session(casNetId, casPassword, timeout=1):
+def get_ws_session(casNetId, casPassword, casTimeout=1, **kwargs):
     """
     get a wsSession key pair (apiKey/wsId and sharedSecret)
 
-    timeout is the number of minutes before the wsSession key expires.
-    valid values for timeout are 1 to 480 in minutes (480 minutes = 8 hours)
+    casTimeout is the number of minutes before the wsSession key expires.
+    valid values for casTimeout are 1 to 480 in minutes (480 minutes = 8 hours)
 
     return value example is
     {'personId': '524246202', 'apiKey': '5f_TzU3jdjX6s7DklHA8',
     'expireDate': '2011-07-07 19:12:43',
     'sharedSecret': 'gKLR8oDsNK4jyvKyWZtsFoiwuvLhwWpsBDTNJo_D'}
     """
-    cas_user_dict = {"timeout": timeout, "username": casNetId, "password": casPassword}
+    cas_user_dict = {"timeout": casTimeout, "username": casNetId, "password": casPassword}
     data = "timeout=%(timeout)s&password=%(password)s&netId=%(username)s" % cas_user_dict
-    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/ws/session", data=data,
-                             headers=headers)
+    content_type = "application/x-www-form-urlencoded; charset=UTF-8"
+    if kwargs.get('headers'):
+        kwargs['headers']['Content-Type'] = content_type
+    else:
+        kwargs['headers'] = {'Content-Type': content_type}
+    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/ws/session", data=data, **kwargs)
     response.raise_for_status()
     body = response.content
     if not body:
