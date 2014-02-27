@@ -61,6 +61,18 @@ class TestOITWebServicesLibrary(unittest.TestCase):
         self.assertTrue(headerValue2)
         self.assertTrue(headerValue1 != headerValue2)
 
+    def test_get_nonce(self):
+        apiKey = 'YF4i2Qdx2WuSj-G8583M'
+        nonce = oit.get_nonce(apiKey, verify=False)
+        self.assertTrue('nonceKey' in nonce)
+        self.assertTrue('nonceValue' in nonce)
+
+    def test_send_ws_request(self):
+        _, _, _, res = oit.send_ws_request('http://www.byu.edu/',
+                                           'GET',
+                                           None,)
+        self.assertTrue(res.status_code, 200)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -85,7 +85,7 @@ def get_ws_session(casNetId, casPassword, timeout=1):
     return simplejson.loads(body)
 
 
-def get_nonce(apiKey, actor=""):
+def get_nonce(apiKey, actor="", **kwargs):
     """
     get a nonce key and value from the api-key
 
@@ -95,9 +95,10 @@ def get_nonce(apiKey, actor=""):
     {'nonceKey': '57921',
      'nonceValue': 'G4qPJr5L3xI3KjXPw0g1mgWY8bzInQts7uctUfTAINm5ov3WCbXqRrTlFyECiiY/8rKGIqGUNDMxI9HlFvDEKg=='}
     """
+    nonce_url = "https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/{0}{1}"
     if actor:
         actor = "/" + actor
-    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/%s%s" % (apiKey, actor))
+    response = requests.post(nonce_url.format(apiKey, actor), **kwargs)
     body = response.content
     try:
         rvalue = simplejson.loads(body)
@@ -208,7 +209,7 @@ def url_encode(sharedSecret, current_timestamp, url, requestBody="", contentType
             item_to_encode = "%s\n%s\n%s\n%s" % (http_method.upper(),
                                                  host, request_uri, _sort_params(requestBody)) + end_str
             if demo:
-                print("// There is something in the request " \
+                print("// There is something in the request "
                       "body and the content-type of the request is %s" % exception_ct)
         else:
             item_to_encode = requestBody + end_str
@@ -270,15 +271,13 @@ def get_http_authorization_header(apiKey, sharedSecret, keyType, encodingType, u
             encodingType, keyType, apiKey, base64encoded_hmac, current_timestamp, actor_value)
 
 
-def send_ws_request(url, httpMethod, requestBody=None, headers=None, timeout=None):
+def send_ws_request(url, httpMethod, requestBody=None, **kwargs):
     """
     A simple example of how to call the web service once the
     the authorization_header_value is available.
     """
-    if not headers:
-        headers = {}
     if not valid_http_method(httpMethod):
         raise Exception(
             "The httpMethod passed in (%s) is not one of '%s'" % (httpMethod, "','".join(VALID_HTTP_METHODS)))
-    response = getattr(requests, httpMethod.lower())(url, data=requestBody, headers=headers, verify=False, timeout=timeout)
+    response = getattr(requests, httpMethod.lower())(url, data=requestBody, **kwargs)
     return response.content, response.status_code, response.headers, response
