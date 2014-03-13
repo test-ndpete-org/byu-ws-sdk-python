@@ -60,23 +60,26 @@ def get_formatted_response(headers, response_str):
 #### Key Retrieval Functions ####
 
 
-def get_ws_session(casNetId, casPassword, timeout=1):
+def get_ws_session(casNetId, casPassword, casTimeout=1, **kwargs):
     """
     get a wsSession key pair (apiKey/wsId and sharedSecret)
 
-    timeout is the number of minutes before the wsSession key expires.
-    valid values for timeout are 1 to 480 in minutes (480 minutes = 8 hours)
+    casTimeout is the number of minutes before the wsSession key expires.
+    valid values for casTimeout are 1 to 480 in minutes (480 minutes = 8 hours)
 
     return value example is
     {'personId': '524246202', 'apiKey': '5f_TzU3jdjX6s7DklHA8',
     'expireDate': '2011-07-07 19:12:43',
     'sharedSecret': 'gKLR8oDsNK4jyvKyWZtsFoiwuvLhwWpsBDTNJo_D'}
     """
-    cas_user_dict = {"timeout": timeout, "username": casNetId, "password": casPassword}
+    cas_user_dict = {"timeout": casTimeout, "username": casNetId, "password": casPassword}
     data = "timeout=%(timeout)s&password=%(password)s&netId=%(username)s" % cas_user_dict
-    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/ws/session", data=data,
-                             headers=headers)
+    content_type = "application/x-www-form-urlencoded; charset=UTF-8"
+    if kwargs.get('headers'):
+        kwargs['headers']['Content-Type'] = content_type
+    else:
+        kwargs['headers'] = {'Content-Type': content_type}
+    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/ws/session", data=data, **kwargs)
     response.raise_for_status()
     body = response.content
     if not body:
@@ -85,7 +88,7 @@ def get_ws_session(casNetId, casPassword, timeout=1):
     return simplejson.loads(body)
 
 
-def get_nonce(apiKey, actor=""):
+def get_nonce(apiKey, actor="", **kwargs):
     """
     get a nonce key and value from the api-key
 
@@ -95,9 +98,10 @@ def get_nonce(apiKey, actor=""):
     {'nonceKey': '57921',
      'nonceValue': 'G4qPJr5L3xI3KjXPw0g1mgWY8bzInQts7uctUfTAINm5ov3WCbXqRrTlFyECiiY/8rKGIqGUNDMxI9HlFvDEKg=='}
     """
+    nonce_url = "https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/{0}{1}"
     if actor:
         actor = "/" + actor
-    response = requests.post("https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/%s%s" % (apiKey, actor))
+    response = requests.post(nonce_url.format(apiKey, actor), **kwargs)
     body = response.content
     try:
         rvalue = simplejson.loads(body)
@@ -208,7 +212,7 @@ def url_encode(sharedSecret, current_timestamp, url, requestBody="", contentType
             item_to_encode = "%s\n%s\n%s\n%s" % (http_method.upper(),
                                                  host, request_uri, _sort_params(requestBody)) + end_str
             if demo:
-                print("// There is something in the request " \
+                print("// There is something in the request "
                       "body and the content-type of the request is %s" % exception_ct)
         else:
             item_to_encode = requestBody + end_str
@@ -270,15 +274,62 @@ def get_http_authorization_header(apiKey, sharedSecret, keyType, encodingType, u
             encodingType, keyType, apiKey, base64encoded_hmac, current_timestamp, actor_value)
 
 
-def send_ws_request(url, httpMethod, requestBody=None, headers=None, timeout=None):
+def send_ws_request(url, httpMethod, requestBody=None, **kwargs):
     """
     A simple example of how to call the web service once the
     the authorization_header_value is available.
     """
-    if not headers:
-        headers = {}
     if not valid_http_method(httpMethod):
         raise Exception(
             "The httpMethod passed in (%s) is not one of '%s'" % (httpMethod, "','".join(VALID_HTTP_METHODS)))
-    response = getattr(requests, httpMethod.lower())(url, data=requestBody, headers=headers, verify=False, timeout=timeout)
+    response = getattr(requests, httpMethod.lower())(url, data=requestBody, **kwargs)
     return response.content, response.status_code, response.headers, response
+
+
+def authorize_request(requestedUrl, authHeader, apiKey, sharedSecret,
+                      actor='', **kwargs):
+    """
+    Returns the personId of a valid BYU authenticated request or None.
+
+    None is returned if the request isn't valid for any reason.
+    Arguments:
+        requestedUrl  -- url requested using the authHeader given.
+        authHeader    -- value of the Authorization header sent with the request.
+        apiKey        -- your api key
+        sharedSecret  -- your shared secret
+
+    Keyword arguments:
+        actor         -- the actor making this authorization request (default '')
+
+    Also accepts any number of other keyword arguments that are passed directly
+    to the calls to get_nonce and request.post
+    """
+    authUrl = ('https://ws.byu.edu/authentication/services/rest/'
+               'v1/provider/URL-Encoded-API-Key/validate')
+
+    if authHeader:
+        wsId, messageDigest, timestamp = authHeader.split(',')
+        wsId = wsId.split(' ')[1]
+        nonce = get_nonce(apiKey, actor, **kwargs)
+        data = {
+            'wsId': wsId,
+            'messageDigest': messageDigest,
+            'timestamp': timestamp,
+            'message': requestedUrl,
+        }
+
+        nonceDigest = nonce_encode(sharedSecret, nonce['nonceValue'])
+        auth = 'Nonce-Encoded-API-Key {0},{1},{2}'.format(apiKey,
+                                                          nonce['nonceKey'],
+                                                          nonceDigest)
+        if kwargs.get('headers'):
+            kwargs['headers']['Authorization'] = auth
+        else:
+            kwargs['headers'] = {'Authorization': auth}
+        response = requests.post(authUrl,
+                                 data=data,
+                                 **kwargs)
+        if response.status_code == 200:
+            return response.json()['personId']
+
+    return None
