@@ -101,6 +101,8 @@ def get_nonce(apiKey, actor="", **kwargs):
     nonce_url = "https://ws.byu.edu/authentication/services/rest/v1/hmac/nonce/{0}{1}"
     if actor:
         actor = "/" + actor
+    else:
+        actor = ""  # in cases when actor == None or 'None' will be added to the URL
     response = requests.post(nonce_url.format(apiKey, actor), **kwargs)
     body = response.content
     try:
