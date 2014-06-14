@@ -9,7 +9,6 @@ import hashlib
 import hmac
 import base64
 import sys
-import six
 import time
 import requests
 
@@ -325,6 +324,10 @@ def authorize_request(requestedUrl, authHeader, apiKey, sharedSecret,
         }
 
         nonceDigest = nonce_encode(sharedSecret, nonce['nonceValue'])
+
+        if sys.version_info > (3,):  # if python 3 convert from bytes to string
+            nonceDigest = nonceDigest.decode("utf-8")
+
         auth = 'Nonce-Encoded-API-Key {0},{1},{2}'.format(apiKey,
                                                           nonce['nonceKey'],
                                                           nonceDigest)
