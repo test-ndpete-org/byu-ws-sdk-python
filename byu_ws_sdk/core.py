@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import base64
 import sys
+import six
 import time
 import requests
 
@@ -263,6 +264,9 @@ def get_http_authorization_header(apiKey, sharedSecret, keyType, encodingType, u
         nonceKey = nonceDict["nonceKey"]
     else:
         raise Exception("encodingType must be one of '%s'" % "' or '".join(VALID_ENCODING_TYPES))
+
+    if sys.version_info > (3,):  # if python 3 convert from bytes to string
+        base64encoded_hmac = base64encoded_hmac.decode("utf-8")
 
     assert len(base64encoded_hmac) == 88
     if encodingType == ENCODING_NONCE:
