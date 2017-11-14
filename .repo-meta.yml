@@ -1,4 +1,3 @@
----
 $schemaver: '2.0'
 deployables:
   - name: byu_ws_sdk
@@ -13,13 +12,13 @@ deployables:
       - ndpete
     developed_by_byu: true
     ddd:
-        business_domain:
-        ubiquitous_language_url:
-        context_map_url:
+      business_domain:
+      ubiquitous_language_url:
+      context_map_url:
     links:
-        system_documentation_url: https://github.com/byu-oit-appdev/byu-ws-sdk-python
-        source_repo_url: https://github.com/test-ndpete-org/byu-ws-sdk-python
-        swagger_urls:
+      system_documentation_url: https://github.com/byu-oit-appdev/byu-ws-sdk-python
+      source_repo_url: https://github.com/test-ndpete-org/byu-ws-sdk-python
+      swagger_urls:
     microservice: false
     technologies_used:
       - Python
@@ -27,33 +26,33 @@ deployables:
       - OIT Custom Web Service Authentication
     standard_change_template_id:
     stages:
-        production:
-            urls:
-                product_page: https://pypi.python.org/pypi/byu_ws_sdk
-                physical_url:
-                virtual_url:
-            hosting_location: Other
-            aws_account:
-            relationships:
-                depends_on:
-                    db_read_write:
-                    db_read_only:
-                    software:
-                supports:
-                    software:
-                      - byu-ws-cli-python
-                      - byu-ws-client-gui
-                    service:
-                reverse_proxy:
-                runs_on:
-                    server_cluster:
-                    virtual_server:
-                    rack_server:
-                    blade_server:
+      production:
+        urls:
+          product_page: https://pypi.python.org/pypi/byu_ws_sdk
+          physical_url:
+          virtual_url:
+        hosting_location: Other
+        aws_account:
+        relationships:
+          depends_on:
+            db_read_write:
+            db_read_only:
+            software:
+          supports:
+            software:
+              - byu-ws-cli-python
+              - byu-ws-client-gui
+            service:
+          reverse_proxy:
+          runs_on:
+            server_cluster:
+            virtual_server:
+            rack_server:
+            blade_server:
     tags:
-        data-sensitivity: confidential
-        env: prd
-        team: AD-Student Life Applications
-        app: byu_ws_sdk
+      data-sensitivity: confidential
+      env: prd
+      team: AD-Student Life Applications
+      app: byu_ws_sdk
     federation_json_url: https://raw.githubusercontent.com/test-ndpete-org/byu-ws-sdk-python/master/.repo-meta.yml
 
